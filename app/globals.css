@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #16120e;
+  --bg2: #1e1812;
+  --bg3: #28211a;
+  --border: #3a2e20;
+  --gold: #d4a030;
+  --cream: #e8dcc8;
+  --dim: #7a6a55;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: Georgia, 'Times New Roman', serif;
+  min-height: 100vh;
+}
+
+input, select, textarea {
+  background: var(--bg3) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--cream) !important;
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  width: 100%;
+  transition: border-color .2s;
+}
+input:focus, select:focus, textarea:focus { border-color: #8a6020 !important; }
+input::placeholder, textarea::placeholder { color: var(--dim); }
+select option { background: var(--bg2); }
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--dim);
+  font-weight: 700;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 10px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid #2a2214;
+  vertical-align: middle;
+}
+tbody tr:hover { background: rgba(255,255,255,.02); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
