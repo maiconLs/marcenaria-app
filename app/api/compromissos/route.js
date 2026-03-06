@@ -1,31 +1,37 @@
 import { NextResponse } from 'next/server'
 import { getList, setList, KEYS } from '../../../lib/kv'
 
+const err = (e) => NextResponse.json({ error: String(e) }, { status: 500 })
+const KEY = KEYS.compromissos
+
 export async function GET() {
-  const data = await getList(KEYS.compromissos)
-  return NextResponse.json(data)
+  try { return NextResponse.json(await getList(KEY)) }
+  catch (e) { return err(e) }
 }
 
 export async function POST(req) {
-  const body = await req.json()
-  const list = await getList(KEYS.compromissos)
-  const next = [body, ...list]
-  await setList(KEYS.compromissos, next)
-  return NextResponse.json(next)
+  try {
+    const body = await req.json()
+    const next = [body, ...(await getList(KEY))]
+    await setList(KEY, next)
+    return NextResponse.json(next)
+  } catch (e) { return err(e) }
 }
 
 export async function PUT(req) {
-  const body = await req.json()
-  const list = await getList(KEYS.compromissos)
-  const next = list.map(c => c.id === body.id ? body : c)
-  await setList(KEYS.compromissos, next)
-  return NextResponse.json(next)
+  try {
+    const body = await req.json()
+    const next = (await getList(KEY)).map(x => x.id === body.id ? body : x)
+    await setList(KEY, next)
+    return NextResponse.json(next)
+  } catch (e) { return err(e) }
 }
 
 export async function DELETE(req) {
-  const { id } = await req.json()
-  const list = await getList(KEYS.compromissos)
-  const next = list.filter(c => c.id !== id)
-  await setList(KEYS.compromissos, next)
-  return NextResponse.json(next)
+  try {
+    const { id } = await req.json()
+    const next = (await getList(KEY)).filter(x => x.id !== id)
+    await setList(KEY, next)
+    return NextResponse.json(next)
+  } catch (e) { return err(e) }
 }
