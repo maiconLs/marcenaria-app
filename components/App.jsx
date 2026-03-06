@@ -198,7 +198,7 @@ function ServicosPage({servicos,reload}){
               <div style={{fontSize:10,color:'#7a6a55',marginTop:3}}>Lançado automaticamente no caixa</div>
             </Field>
           </Row2>
-          <Field label="Marceneiro responsável"><select value={form.marceneiro||''} onChange={f('marceneiro')}><option value="">— Selecionar —</option>{MARCENEIROS.map(m=><option key={m} value={m}>{m}</option>)}</select></Field>
+          <Field label="Marceneiro responsável"><select value={form.marceneiro||''} onChange={f('marceneiro')}><option value="">{'— Selecionar —'}</option>{MARCENEIROS.map(m=><option key={m} value={m}>{m}</option>)}</select></Field>
           <Row2>
             <Field label="Início da produção"><input type="date" value={form.dataInicio||''} onChange={f('dataInicio')}/></Field>
             <Field label="Conclusão da produção"><input type="date" value={form.dataConclusao||''} onChange={f('dataConclusao')}/></Field>
@@ -399,7 +399,7 @@ function CompromissosPage({compromissos,reload}){
             return(
               <div key={c.id} style={{display:'flex',alignItems:'center',gap:12,fontSize:13,marginBottom:8}}>
                 <span style={{fontSize:16}}>{cfg.icon}</span>
-                <div><strong style={{color:'#e8dcc8'}}>{c.titulo}</strong>{c.cliente&&<span style={{color:'#7a6a55'}}> — {c.cliente}</span>}</div>
+                <div><strong style={{color:'#e8dcc8'}}>{c.titulo}</strong>{c.cliente&&<span style={{color:'#7a6a55'}}>{' \u2014 '}{c.cliente}</span>}</div>
                 <div style={{marginLeft:'auto',color:'#d4a030',fontSize:12,whiteSpace:'nowrap'}}>{fmtDate(c.data)}{c.hora?` às ${c.hora}`:''}</div>
               </div>
             )
@@ -531,7 +531,6 @@ function CaixaPage({caixa,reload}){
         {[['movimentos','📋 Movimentos'],['categorias','🏷️ Categorias'],['dre','📊 DRE'],['grafico','📈 Gráfico']].map(([id,lbl])=>(
           <button key={id} onClick={()=>setAba(id)} style={{padding:'10px 14px',cursor:'pointer',fontSize:12,fontWeight:700,fontFamily:'Georgia,serif',letterSpacing:'.04em',textTransform:'uppercase',background:'none',border:'none',borderBottom:`2px solid ${aba===id?'#d4a030':'transparent'}`,color:aba===id?'#d4a030':'#7a6a55',transition:'all .2s'}}>{lbl}</button>
         ))}
-        {/* Filtro de mês sempre visível à direita */}
         <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:8,paddingBottom:8}}>
           <span style={{fontSize:11,color:'#7a6a55'}}>Mês:</span>
           <input type="month" style={{width:150}} value={filtroMes} onChange={e=>setFiltroMes(e.target.value)}/>
@@ -566,7 +565,6 @@ function CaixaPage({caixa,reload}){
       )}
       {aba==='categorias'&&(
         <div style={{display:'flex',flexDirection:'column',gap:16}}>
-          {/* Selector mensal/total */}
           {[
             {titulo:'↑ Entradas por categoria',items:mesEntItems,allItems:allEntItems,cor:'#5db872',cats:CAT_ENT},
             {titulo:'↓ Saídas — Custos Fixos',items:mesSaiItems.filter(c=>c.natureza==='fixo'),allItems:allSaiItems.filter(c=>c.natureza==='fixo'),cor:'#e05545',cats:CAT_FIXO},
@@ -600,9 +598,7 @@ function CaixaPage({caixa,reload}){
                           </div>
                         </div>
                         <div style={{background:'#28211a',borderRadius:4,height:14,overflow:'hidden',position:'relative'}}>
-                          {/* barra total */}
                           <div style={{position:'absolute',top:0,left:0,width:`${Math.round(r.valor/maxVal*100)}%`,height:'100%',background:grupo.cor+'33',borderRadius:4}}/>
-                          {/* barra mês */}
                           {mesCat&&<div style={{position:'absolute',top:0,left:0,width:`${Math.round((mesCat.valor||0)/maxVal*100)}%`,height:'100%',background:`linear-gradient(90deg,${grupo.cor}99,${grupo.cor})`,borderRadius:4}}/>}
                         </div>
                       </div>
@@ -614,7 +610,7 @@ function CaixaPage({caixa,reload}){
           })}
         </div>
       )}
-
+      {aba==='dre'&&(
         <div style={{background:'#1e1812',border:'1px solid #3a2e20',borderRadius:10,padding:24}}>
           <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20}}>
             <span style={{color:'#7a6a55',fontSize:12}}>Mês de referência:</span>
@@ -631,7 +627,7 @@ function CaixaPage({caixa,reload}){
       )}
       {aba==='grafico'&&(
         <div style={{background:'#1e1812',border:'1px solid #3a2e20',borderRadius:10,padding:24}}>
-          <div style={{marginBottom:16,fontSize:13,color:'#7a6a55'}}>Últimos 6 meses — Entradas vs Custos</div>
+          <div style={{marginBottom:16,fontSize:13,color:'#7a6a55'}}>{'Últimos 6 meses \u2014 Entradas vs Custos'}</div>
           {months.map((m,i)=>(
             <div key={i} style={{marginBottom:18}}>
               <div style={{fontSize:11,color:'#7a6a55',marginBottom:6,textTransform:'uppercase',letterSpacing:'.06em'}}>{m.lbl}</div>
@@ -658,7 +654,7 @@ function CaixaPage({caixa,reload}){
             <Field label="Data *"><input type="date" value={form.data||today()} onChange={f('data')}/></Field>
           </Row2>
           {modal==='saida'&&<Field label="Natureza do custo"><select value={form.natureza||'variavel'} onChange={f('natureza')}><option value="variavel">Custo Variável</option><option value="fixo">Custo Fixo</option></select></Field>}
-          <Field label="Categoria"><select value={form.cat||''} onChange={f('cat')}><option value="">— Selecionar —</option>{catOptions.map(c=><option key={c} value={c}>{c}</option>)}</select></Field>
+          <Field label="Categoria"><select value={form.cat||''} onChange={f('cat')}><option value="">{'— Selecionar —'}</option>{catOptions.map(c=><option key={c} value={c}>{c}</option>)}</select></Field>
         </Modal>
       )}
     </div>
@@ -686,7 +682,7 @@ function DashboardPage({servicos,orcamentos,caixa,compromissos}){
       <div style={{background:'linear-gradient(135deg,#28211a,rgba(139,78,31,.12))',border:'1px solid #3a2e20',borderRadius:10,padding:'20px 24px',marginBottom:24,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:12}}>
         <div>
           <div style={{fontFamily:'Georgia,serif',fontSize:22,color:'#e8dcc8',fontStyle:'italic'}}>Bom dia! 🪚</div>
-          <div style={{fontSize:12,color:'#7a6a55',marginTop:4}}>Sistema compartilhado — dados em tempo real para a equipe.</div>
+          <div style={{fontSize:12,color:'#7a6a55',marginTop:4}}>{'Sistema compartilhado \u2014 dados em tempo real para a equipe.'}</div>
         </div>
         <div style={{fontSize:12,color:'#d4a030'}}>{dateStr}</div>
       </div>
