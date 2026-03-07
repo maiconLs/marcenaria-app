@@ -164,7 +164,8 @@ function ServicosPage({servicos,reload,marceneiros,setMarceneiros}){
   const porMarc=marceneiros.map(m=>{
     const items=servicos.filter(s=>s.marceneiro===m&&(s.status==='producao'||s.status==='entregue'))
     const entregues=items.filter(s=>s.dataConclusao?.startsWith(filtroMes)||s.status==='entregue').length
-    return{nome:m,total:items.length,entregues,emProd:items.filter(s=>s.status==='producao').length}
+    const valor=items.reduce((a,s)=>a+parseFloat(s.valor||0),0)
+    return{nome:m,total:items.length,entregues,emProd:items.filter(s=>s.status==='producao').length,valor}
   }).filter(r=>r.total>0)
 
   return (
@@ -203,6 +204,7 @@ function ServicosPage({servicos,reload,marceneiros,setMarceneiros}){
                   <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:6}}>{'🪚 '}{m.nome}</div>
                   <div style={{fontSize:12,color:C.yellow}}>Em producao: <strong>{m.emProd}</strong></div>
                   <div style={{fontSize:12,color:C.green}}>Entregues: <strong>{m.entregues}</strong></div>
+                  <div style={{fontSize:12,color:C.gold,marginTop:4,fontWeight:700}}>{fmtMoney(m.valor)}</div>
                 </div>
               ))}
             </div>
