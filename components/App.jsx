@@ -794,10 +794,16 @@ function CaixaPage({caixa,reload}){
 
       {aba==='dre'&&(
         <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:24}}>
-          {[{label:'Receita Bruta',value:mesEnt,color:C.green,bold:true},{label:'( - ) Custos Variaveis',value:-mesVar,color:C.yellow},{label:'= Margem Bruta',value:margem,color:margem>=0?C.green:C.red,bold:true,border:true},{label:'( - ) Custos Fixos',value:-mesFix,color:C.red},{label:'= Lucro Liquido',value:lucro,color:lucro>=0?C.green:C.red,bold:true,big:true,border:true}].map((row,i)=>(
+          {[
+            {label:'Receita Bruta',         value:mesEnt,  display:fmtMoney(mesEnt),                                           color:C.green,                 bold:true},
+            {label:'( - ) Custos Variaveis',value:mesVar,  display:'- '+fmtMoney(mesVar),                                      color:C.yellow},
+            {label:'= Margem Bruta',        value:margem,  display:fmtMoney(margem),                                           color:margem>=0?C.green:C.red,  bold:true, border:true},
+            {label:'( - ) Custos Fixos',    value:mesFix,  display:'- '+fmtMoney(mesFix),                                      color:C.red},
+            {label:'= Lucro Liquido',       value:lucro,   display:(lucro<0?'- ':'')+fmtMoney(Math.abs(lucro)),                color:lucro>=0?C.green:C.red,   bold:true, big:true, border:true},
+          ].map((row,i)=>(
             <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingTop:row.border?16:8,paddingBottom:8,borderTop:row.border?`1px solid ${C.border}`:'none'}}>
               <span style={{fontSize:row.big?15:13,fontWeight:row.bold?700:400,color:row.bold?C.text:C.textMid}}>{row.label}</span>
-              <span style={{fontSize:row.big?22:14,fontWeight:700,color:row.color,fontFamily:'Georgia,serif',fontStyle:'italic'}}>{fmtMoney(Math.abs(row.value))}</span>
+              <span style={{fontSize:row.big?22:14,fontWeight:700,color:row.color,fontFamily:'Georgia,serif',fontStyle:'italic'}}>{row.display}</span>
             </div>
           ))}
           {mesEnt>0&&<div style={{marginTop:16,padding:'10px 14px',background:C.surface2,borderRadius:8,fontSize:12,color:C.textMid,border:`1px solid ${C.border}`}}>Margem liquida: <strong style={{color:lucro>=0?C.green:C.red}}>{Math.round(lucro/mesEnt*100)}%</strong> · Ponto de equilibrio: <strong style={{color:C.gold}}>{fmtMoney(mesFix)}</strong></div>}
