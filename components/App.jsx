@@ -39,8 +39,8 @@ const COMP_TIPOS = {
   reuniao:{ label:'Reunião', color:C.blue,  icon:'\uD83E\uDD1D' },
   entrega:{ label:'Entrega', color:C.green, icon:'\uD83D\uDE9A' },
 }
-const CAT_FIXO = ['Aluguel da oficina','Salários fixos','Energia elétrica','Outro fixo']
-const CAT_VAR  = ['Material / Madeira','Ferramenta / Equip.','Frete / Entrega','Marketing','Outro variável']
+const CAT_FIXO = ['Aluguel da oficina','Salários fixos','Energia elétrica','Contabilidade','Outro fixo']
+const CAT_VAR  = ['Material / Madeira','Ferragens / Material','Fitas','Ferramenta / Equip.','Afiacao de serra','Frete / Entrega','Combustivel','Almoco','Padaria','Imposto','Comissao','Retirada','Marketing','Outro variável']
 const CAT_ENT  = ['Serviço / Venda','Sinal recebido','Pagamento final','Outro']
 
 const api = {
