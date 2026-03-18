@@ -24,8 +24,9 @@ const MARC_KEY = 'marc:marceneiros'
 const DEFAULT_MARCENEIROS = ['Maicon','Victor','Carlos','Daniel']
 
 const STATUS_CFG = {
-  orcamento:{ label:'Orçamento',   color:C.blue,   bg:C.blueBg,   border:'#bcd0f0' },
-  producao: { label:'Em Produção', color:C.yellow, bg:C.yellowBg, border:'#f0d898' },
+  orcamento:{ label:'A Produzir',  color:C.blue,   bg:C.blueBg,   border:'#bcd0f0' },
+  producao: { label:'Em Producao', color:C.yellow, bg:C.yellowBg, border:'#f0d898' },
+  concluido:{ label:'Concluido',   color:'#7c3aed',bg:'#f3eeff',  border:'#c4b0f8' },
   entregue: { label:'Entregue',    color:C.green,  bg:C.greenBg,  border:'#a8dab8' },
   cancelado:{ label:'Cancelado',   color:C.red,    bg:C.redBg,    border:'#f0b8b8' },
 }
@@ -158,14 +159,24 @@ function ServicosPage({servicos,reload,marceneiros,setMarceneiros}){
   }
 
   // Resumo do mês
-  const doMes=servicos.filter(s=>s.dataInicio?.startsWith(filtroMes)||s.criadoEm?.startsWith(filtroMes))
+  const doMes=servicos.filter(s=>s.criadoEm?.startsWith(filtroMes)||s.dataInicio?.startsWith(filtroMes)||s.dataConclusao?.startsWith(filtroMes))
   const prodMes=servicos.filter(s=>s.status==='producao')
   const entregMes=servicos.filter(s=>s.dataConclusao?.startsWith(filtroMes)||s.status==='entregue')
+  const resumoStatus=Object.entries(STATUS_CFG).filter(([k])=>k!=='cancelado').map(([key,cfg])=>{
+    const items=servicos.filter(s=>s.status===key&&(s.criadoEm?.startsWith(filtroMes)||s.dataInicio?.startsWith(filtroMes)||s.dataConclusao?.startsWith(filtroMes)||s.status===key))
+    // para producao e a produzir, pega todos ativos; para concluido/entregue filtra pelo mes
+    const itensMes = (key==='producao'||key==='orcamento')
+      ? servicos.filter(s=>s.status===key)
+      : servicos.filter(s=>s.status===key&&(s.dataConclusao?.startsWith(filtroMes)||s.dataPagamento?.startsWith(filtroMes)||s.criadoEm?.startsWith(filtroMes)))
+    const valor=itensMes.reduce((a,s)=>a+parseFloat(s.valor||0),0)
+    return{key,cfg,qtd:itensMes.length,valor}
+  })
   const porMarc=marceneiros.map(m=>{
-    const items=servicos.filter(s=>s.marceneiro===m&&(s.status==='producao'||s.status==='entregue'))
-    const entregues=items.filter(s=>s.dataConclusao?.startsWith(filtroMes)||s.status==='entregue').length
-    const valor=items.reduce((a,s)=>a+parseFloat(s.valor||0),0)
-    return{nome:m,total:items.length,entregues,emProd:items.filter(s=>s.status==='producao').length,valor}
+    const todos=servicos.filter(s=>s.marceneiro===m&&s.status!=='cancelado')
+    const emProd=todos.filter(s=>s.status==='producao').length
+    const concMes=todos.filter(s=>(s.status==='concluido'||s.status==='entregue')&&(s.dataConclusao?.startsWith(filtroMes)||s.dataPagamento?.startsWith(filtroMes)))
+    const valor=concMes.reduce((a,s)=>a+parseFloat(s.valor||0),0)
+    return{nome:m,total:todos.length,concluidos:concMes.length,emProd,valor}
   }).filter(r=>r.total>0)
 
   return (
@@ -190,11 +201,15 @@ function ServicosPage({servicos,reload,marceneiros,setMarceneiros}){
             <input type="month" style={{...IS,width:150}} value={filtroMes} onChange={e=>setFiltroMes(e.target.value)}/>
           </div>
         </div>
-        <Grid cols={150} style={{marginBottom:porMarc.length>0?16:0}}>
-          <StatCard label="Em producao" value={prodMes.length} sub="ativos agora" accent={C.yellow} accentBg={C.yellowBg}/>
-          <StatCard label="Entregues" value={entregMes.length} sub={`em ${filtroMes}`} accent={C.green} accentBg={C.greenBg}/>
-          <StatCard label="Total servicos" value={servicos.filter(s=>!['cancelado'].includes(s.status)).length} sub="ativos e entregues" accent={C.blue} accentBg={C.blueBg}/>
-        </Grid>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10,marginBottom:porMarc.length>0?16:0}}>
+          {resumoStatus.map(({key,cfg,qtd,valor})=>(
+            <div key={key} style={{background:cfg.bg,border:`1px solid ${cfg.border}`,borderLeft:`3px solid ${cfg.color}`,borderRadius:8,padding:'10px 14px'}}>
+              <div style={{fontSize:11,textTransform:'uppercase',letterSpacing:'.07em',color:cfg.color,fontWeight:700,marginBottom:6}}>{cfg.label}</div>
+              <div style={{fontSize:20,fontFamily:'Georgia,serif',fontStyle:'italic',fontWeight:700,color:cfg.color}}>{qtd}</div>
+              <div style={{fontSize:12,color:C.textMid,marginTop:4,fontWeight:600}}>{fmtMoney(valor)}</div>
+            </div>
+          ))}
+        </div>
         {porMarc.length>0&&(
           <div>
             <div style={{fontSize:11,textTransform:'uppercase',letterSpacing:'.07em',color:C.textMid,fontWeight:700,marginBottom:10}}>Por marceneiro</div>
@@ -203,8 +218,9 @@ function ServicosPage({servicos,reload,marceneiros,setMarceneiros}){
                 <div key={m.nome} style={{background:C.surface2,borderRadius:8,padding:'10px 12px',border:`1px solid ${C.border2}`}}>
                   <div style={{fontWeight:700,fontSize:13,color:C.text,marginBottom:6}}>{'🪚 '}{m.nome}</div>
                   <div style={{fontSize:12,color:C.yellow}}>Em producao: <strong>{m.emProd}</strong></div>
-                  <div style={{fontSize:12,color:C.green}}>Entregues: <strong>{m.entregues}</strong></div>
-                  <div style={{fontSize:12,color:C.gold,marginTop:4,fontWeight:700}}>{fmtMoney(m.valor)}</div>
+                  <div style={{fontSize:12,color:C.green}}>Concluidos/Entregues: <strong>{m.concluidos}</strong></div>
+                  <div style={{fontSize:11,color:C.textSoft}}>Valor produzido no mes:</div>
+                  <div style={{fontSize:13,color:C.gold,fontWeight:700}}>{fmtMoney(m.valor)}</div>
                 </div>
               ))}
             </div>
@@ -657,13 +673,10 @@ function CaixaPage({caixa,reload}){
   if(filtroTipo)filtered=filtered.filter(c=>c.tipo===filtroTipo)
   if(filtroMes)filtered=filtered.filter(c=>c.data?.startsWith(filtroMes))
 
-  const totalEnt=caixa.filter(c=>c.tipo==='entrada').reduce((a,c)=>a+c.valor,0)
-  const totalFix=caixa.filter(c=>c.tipo==='saida'&&c.natureza==='fixo').reduce((a,c)=>a+c.valor,0)
-  const totalVar=caixa.filter(c=>c.tipo==='saida'&&c.natureza==='variavel').reduce((a,c)=>a+c.valor,0)
-  const saldo=totalEnt-totalFix-totalVar
   const mesEnt=caixa.filter(c=>c.tipo==='entrada'&&c.data?.startsWith(filtroMes)).reduce((a,c)=>a+c.valor,0)
   const mesFix=caixa.filter(c=>c.tipo==='saida'&&c.natureza==='fixo'&&c.data?.startsWith(filtroMes)).reduce((a,c)=>a+c.valor,0)
   const mesVar=caixa.filter(c=>c.tipo==='saida'&&c.natureza==='variavel'&&c.data?.startsWith(filtroMes)).reduce((a,c)=>a+c.valor,0)
+  const saldo=mesEnt-mesFix-mesVar
   const margem=mesEnt-mesVar
   const lucro=mesEnt-mesVar-mesFix
 
@@ -682,10 +695,10 @@ function CaixaPage({caixa,reload}){
         <div style={{display:'flex',gap:8}}><Btn variant="green" onClick={()=>openModal('entrada')}>+ Entrada</Btn><Btn variant="red" onClick={()=>openModal('saida')}>+ Saida</Btn></div>
       </div>
       <Grid cols={190} style={{marginBottom:20}}>
-        <StatCard label="Total entradas" value={fmtMoney(totalEnt)} sub="historico" accent={C.green} accentBg={C.greenBg}/>
-        <StatCard label="Custos fixos" value={fmtMoney(totalFix)} sub="historico" accent={C.red} accentBg={C.redBg}/>
-        <StatCard label="Custos variaveis" value={fmtMoney(totalVar)} sub="historico" accent={C.yellow} accentBg={C.yellowBg}/>
-        <StatCard label="Saldo atual" value={fmtMoney(saldo)} sub="entradas menos saidas" accent={saldo>=0?C.green:C.red} accentBg={saldo>=0?C.greenBg:C.redBg}/>
+        <StatCard label="Entradas do mes" value={fmtMoney(mesEnt)} sub={filtroMes} accent={C.green} accentBg={C.greenBg}/>
+        <StatCard label="Custos fixos" value={fmtMoney(mesFix)} sub={filtroMes} accent={C.red} accentBg={C.redBg}/>
+        <StatCard label="Custos variaveis" value={fmtMoney(mesVar)} sub={filtroMes} accent={C.yellow} accentBg={C.yellowBg}/>
+        <StatCard label="Saldo do mes" value={fmtMoney(saldo)} sub={filtroMes} accent={saldo>=0?C.green:C.red} accentBg={saldo>=0?C.greenBg:C.redBg}/>
       </Grid>
       <div style={{display:'flex',borderBottom:`1px solid ${C.border}`,marginBottom:16,alignItems:'center',flexWrap:'wrap',gap:0}}>
         {[['movimentos','Movimentos'],['categorias','Categorias'],['dre','DRE'],['grafico','Grafico']].map(([id,lbl])=>(
